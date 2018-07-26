@@ -1,16 +1,29 @@
 const Application = require('./spectronSetup');
+<<<<<<< Updated upstream
 const {isMac} = require('../../js/utils/misc.js');
 const robot = require('robotjs');
 
 let app = new Application({});
 let configPath;
 let mIsAlwaysOnTop;
+=======
+const WindowsActions = require('./spectronWindowsActions');
+const WebActions = require('./spectronWebActions');
+const Utils = require('./spectronUtils');
+const {isMac} = require('../../js/utils/misc.js');
+
+let app;
+let windowActions;
+let webActions;
+let menuItem;
+>>>>>>> Stashed changes
 
 describe('Tests for Always on top', () => {
 
     let originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
     jasmine.DEFAULT_TIMEOUT_INTERVAL = Application.getTimeOut();
 
+<<<<<<< Updated upstream
     beforeAll((done) => {
         return app.startApplication({alwaysOnTop: false}).then((startedApp) => {
             app = startedApp;
@@ -21,10 +34,25 @@ describe('Tests for Always on top', () => {
                 done.fail(new Error(`Unable to start application error: ${err}`));
             });
         }).catch((err) => {
+=======
+    beforeAll(async (done) => {
+        try {
+            app = await new Application({}).startApplication({alwaysOnTop: false});
+            windowActions = await new WindowsActions(app);
+            webActions = await new WebActions(app);
+            if(isMac){
+                menuItem = "View";
+            } else {
+                menuItem = "Window";
+            }
+            done();
+        } catch(err) {
+>>>>>>> Stashed changes
             done.fail(new Error(`Unable to start application error: ${err}`));
         });
     });
 
+<<<<<<< Updated upstream
     function getConfigPath() {
         return new Promise(function (resolve, reject) {
             app.client.addCommand('getUserDataPath', function () {
@@ -44,6 +72,14 @@ describe('Tests for Always on top', () => {
         if (app && app.isRunning()) {
             jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
             app.stop().then(() => {
+=======
+    afterAll(async (done) => {
+        try {
+            await Utils.killProcess("notepad.exe");
+            await Utils.killProcess("mspaint.exe");
+            await windowActions.openMenu([menuItem,"Always on Top"]);
+            if (app && app.isRunning()) {
+>>>>>>> Stashed changes
                 jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
                 done();
             }).catch((err) => {
@@ -82,6 +118,7 @@ describe('Tests for Always on top', () => {
         });
     });
 
+<<<<<<< Updated upstream
     it('should bring the app to front in windows', (done) => {
         if (!isMac) {
             app.browserWindow.focus();
@@ -144,6 +181,30 @@ describe('Tests for Always on top', () => {
                 robot.keyTap('down');
             }
             robot.keyTap('enter');
+=======
+    /**
+     * Verify Always on Top options when multiple applications are opened
+     * TC-ID: 2898431
+     * Cover scenarios in AVT-990
+     */
+    it('Verify Always on Top options when multiple applications are opened', async (done) => {
+        try {
+            await windowActions.openMenu([menuItem,"Always on Top"]);
+            //await webActions.minimizeWindows();
+            await Utils.openAppInMaximize("C:\\Windows\\notepad.exe");
+            await Utils.openAppInMaximize("C:\\Windows\\system32\\mspaint.exe");
+            await windowActions.showWindow();
+            await windowActions.clickOutsideWindow();
+            await windowActions.verifyWindowsOnTop();
+
+            //Close and open app again, make sure it's always on top
+            await app.stop();
+            app = await new Application({}).startApplication();
+            windowActions = await new WindowsActions(app);
+            webActions = await new WebActions(app);
+            await windowActions.clickOutsideWindow();
+            await windowActions.verifyWindowsOnTop();
+>>>>>>> Stashed changes
             done();
         } else {
             app.browserWindow.getBounds().then((bounds) => {
