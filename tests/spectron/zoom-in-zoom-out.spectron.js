@@ -41,7 +41,7 @@ describe('Tests for Zoom in and Zoom out', () => {
     }
 
     afterAll((done) => {
-        // Get it back normal size
+        // Get it back normal size      
         if (!isMac) {
             for (let i = 0; i < 4; i++) {
                 robot.keyToggle('+', 'down', ['control', 'shift']);

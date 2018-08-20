@@ -114,22 +114,22 @@ class WebActions {
     }
 
     async verifyNoToastNotificationShow(message) {
-        let noShow;
+        let noShow = false;
         for (let i = 0; i < 10; i++) {
             let winCount = await this.app.client.getWindowCount();
-            if (winCount > 1) {
-                for (let j = 1; j < winCount; j++) {
-                    await this.app.client.windowByIndex(j);
-                    if (await this.app.client.getText(ui.TOAST_MESSAGE_CONTENT) !== message) {
-                        noShow = true;
-                    }
-                    else {
-                        noShow = false;
-                    }
-                }
-                if (noShow === false) {
-                    break;
-                }
+            await console.log(winCount);
+            if (winCount == 1) {
+                noShow = true;
+                // for (let j = 1; j < winCount; j++) {
+                //     await this.app.client.windowByIndex(j);
+                //     if (await this.app.client.getText(ui.TOAST_MESSAGE_CONTENT) !== message) {
+                //         noShow = true;
+                //     }
+                //     else {
+                //         noShow = false;
+                //     }
+                // }
+                
             }
             await Utils.sleep(1);
         }
@@ -168,10 +168,19 @@ class WebActions {
         await this.waitElementNotVisible(ui.SPINNER);
     }
 
-    async persistToastIM() {
+    async persistToastIM(isPersistance) {
         await this.clickAndWaitElementVisible(ui.SETTTING_BUTTON, ui.ALERT_OPTION, constants.TIMEOUT_WAIT_ELEMENT);
         await this.clickAndWaitElementVisible(ui.ALERT_OPTION, ui.ALERT_TAB, constants.TIMEOUT_WAIT_ELEMENT);
-        await this.clickAndWaitElementVisible(ui.PERSIS_NOTIFICATION_INPUT_IM, ui.PERSIS_NOTIFICATION_INPUT_IM, constants.TIMEOUT_WAIT_ELEMENT);
+        let ischeck = await this.app.client.element(ui.PERSIS_NOTIFICATION_INPUT_IM).getAttribute("checked");
+     
+        if (isPersistance === true && (ischeck === false || ischeck === null ))
+            await this.clickAndWaitElementVisible(ui.PERSIS_NOTIFICATION_INPUT_IM, ui.PERSIS_NOTIFICATION_INPUT_IM, constants.TIMEOUT_WAIT_ELEMENT);
+        else if (isPersistance === false && ischeck === true )  
+        {
+            //await this.clickAndWaitElementVisible(ui.PERSIS_NOTIFICATION_INPUT_IM, ui.PERSIS_NOTIFICATION_INPUT_IM, constants.TIMEOUT_WAIT_ELEMENT); 
+            await this.scrollAndClick(ui.SCROLL_TAB_ACTIVE,ui.PERSIS_NOTIFICATION_INPUT_IM);
+            await console.log(ischeck);
+        }
     }
 
     async openACP() {

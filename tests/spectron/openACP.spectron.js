@@ -14,6 +14,7 @@ let webActions, windowAction;
 
 !isMac ? describe(' Open ACP inside Electron when clicking on the "Go to AC portal"', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = 1200000;
+    let  originalTimeout = Application.getTimeOut();
     beforeAll(async (done) => {
         try {
             app = await new Application({}).startApplication({ testedHost: specconst.TESTED_HOST, alwaysOnTop: true });
@@ -25,6 +26,7 @@ let webActions, windowAction;
         };
     });
     afterAll(async (done) => {
+        jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
         try {
             if (app && app.isRunning()) {
                 await app.stop();

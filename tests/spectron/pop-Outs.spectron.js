@@ -37,6 +37,7 @@ let app, webActions, windowsActions;
 
     afterAll(async (done) => {
         try {
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = constants.TIMEOUT_TEST_SUITE;
             await windowsActions.closeAllPopOutWindow();
             await webActions.closeAllGridModules();
             await windowsActions.stopApp();

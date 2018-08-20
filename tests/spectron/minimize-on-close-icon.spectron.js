@@ -46,7 +46,7 @@ let app, wActions, config;
         try {            
             if (app && app.isRunning()) {                 
                 done();         
-                wActions.closeChrome();    
+                wActions.closeChromeDriver();    
             }                   
         } catch (error) {         
           done.fail(new Error(`After all: ${error}`));           

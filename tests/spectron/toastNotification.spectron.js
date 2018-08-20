@@ -33,6 +33,7 @@ let app, webDriver, webActions, windowsActions;
 
     afterAll(async (done) => {
         try {
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = constants.TIMEOUT_TEST_SUITE;
             await windowsActions.stopApp();
             await webDriver.quit();
             done();

@@ -22,6 +22,7 @@ let webActions, windowAction;
       app = await new Application({}).startApplication({ testedHost: specconst.TESTED_HOST, alwaysOnTop: true });
       windowAction = await new WindowsAction(app);
       webActions = await new WebActions(app);
+      windowAction.webAction = webActions;
       done();
     } catch (err) {
       done.fail(new Error(`Unable to start application error: ${err}`));
@@ -34,6 +35,7 @@ let webActions, windowAction;
         webdriver.close();
         webdriver.quit();
         done();
+        windowAction.closeChromeDriver();
       }).catch((err) => {
         done();
       });
@@ -45,7 +47,7 @@ let webActions, windowAction;
    * Cover scenarios in AVT-1031
    */
   it('Toast notification should not be closed', async () => {
-
+    //await console.log(window.navigator.appVersion );
     await webdriver.startDriver();
     await webdriver.login(specconst.USER_A);
     await webdriver.createIM(specconst.USER_B.username);

@@ -12,12 +12,14 @@ let webActions, windowAction;
 
 !isMac ? describe('Verify toast notification when Persist Notification is ON', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = 300000;   
+    let originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
     beforeAll(async(done) => {
         try
         {
             app = await new Application({}).startApplication({testedHost:specconst.TESTED_HOST, alwaysOnTop: true});
             windowAction = await new WindowsAction(app);
             webActions = await new WebActions(app);
+            windowAction.webAction = webActions;
             done();
         } catch(err) {
             done.fail(new Error(`Unable to start application error: ${err}`));
@@ -26,9 +28,10 @@ let webActions, windowAction;
     afterAll(async (done) => {
         try {
             if (app && app.isRunning()) {
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = await originalTimeout;
                 await app.stop();    
                 await webdriver.quit();
+                await windowAction.closeChromeDriver();    
                 done();
             }
         } catch (err) {
@@ -49,13 +52,13 @@ let webActions, windowAction;
         
         await windowAction.reload(); 
         await app.client.waitForVisible(ifc.SETTTING_BUTTON, Utils.toMs(50));       
-        await webActions.persistToastIM();
+        await webActions.persistToastIM(true);
     
         await windowAction.pressCtrlM();
         var message = await Utils.randomString();
         await webdriver.sendMessages([message]);
-        await windowAction.veriryPersistToastNotification(message);
-        await webdriver.startDriver();
+        await windowAction.veriryPersistToastNotification(message);   
+        await windowAction.pressCtrlM();     
         await webdriver.createMIM([specconst.USER_B.username, specconst.USER_C.username]);
         await webdriver.sendMessages([message]);
         await windowAction.veriryPersistToastNotification(message);
@@ -70,14 +73,14 @@ let webActions, windowAction;
     
         await windowAction.showWindow();
         await app.client.waitForVisible(ifc.SETTTING_BUTTON, Utils.toMs(50));
-        await webActions.persistToastIM();
+        await webActions.persistToastIM(false);
         await webdriver.clickLeftNavItem(specconst.USER_B.name);
         var message = await Utils.randomString();
         await webdriver.sendMessages([message]);
-        await windowAction.verifyNotPersistToastNotification("Electron");
+        await windowAction.verifyNotPersistToastNotification();
         await webdriver.createMIM([specconst.USER_B.username, specconst.USER_C.username]);      
         await webdriver.sendMessages([message]);
-        await windowAction.verifyNotPersistToastNotification("Electron");
+        await windowAction.verifyNotPersistToastNotification();
       
   })
  
