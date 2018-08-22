@@ -114,22 +114,14 @@ class WebActions {
     }
 
     async verifyNoToastNotificationShow(message) {
-        let noShow = false;
+        let noShow = true;
         for (let i = 0; i < 10; i++) {
             let winCount = await this.app.client.getWindowCount();
-            await console.log(winCount);
+            
+            await this.app.client.windowByIndex(1);
+            let title =  await this.app.client.getText(ui.TOAST_MESSAGE_CONTENT);           
             if (winCount == 1) {
-                noShow = true;
-                // for (let j = 1; j < winCount; j++) {
-                //     await this.app.client.windowByIndex(j);
-                //     if (await this.app.client.getText(ui.TOAST_MESSAGE_CONTENT) !== message) {
-                //         noShow = true;
-                //     }
-                //     else {
-                //         noShow = false;
-                //     }
-                // }
-                
+                noShow = true;             
             }
             await Utils.sleep(1);
         }
@@ -165,7 +157,7 @@ class WebActions {
         await this.inputText(ui.SIGN_IN_EMAIL, user.username);
         await this.inputText(ui.SIGN_IN_PASSWORD, user.password);
         await this.clickAndWaitElementVisible(ui.SIGN_IN_BUTTON, ui.SETTTING_BUTTON, constants.TIMEOUT_PAGE_LOAD);
-        await this.waitElementNotVisible(ui.SPINNER);
+        //await this.waitElementNotVisible(ui.SPINNER);
     }
 
     async persistToastIM(isPersistance) {
@@ -174,8 +166,10 @@ class WebActions {
         let ischeck = await this.app.client.element(ui.PERSIS_NOTIFICATION_INPUT_IM).getAttribute("checked");
      
         if (isPersistance === true && (ischeck === false || ischeck === null ))
+        {
             await this.clickAndWaitElementVisible(ui.PERSIS_NOTIFICATION_INPUT_IM, ui.PERSIS_NOTIFICATION_INPUT_IM, constants.TIMEOUT_WAIT_ELEMENT);
-        else if (isPersistance === false && ischeck === true )  
+        }
+        else if (isPersistance === false)  
         {
             //await this.clickAndWaitElementVisible(ui.PERSIS_NOTIFICATION_INPUT_IM, ui.PERSIS_NOTIFICATION_INPUT_IM, constants.TIMEOUT_WAIT_ELEMENT); 
             await this.scrollAndClick(ui.SCROLL_TAB_ACTIVE,ui.PERSIS_NOTIFICATION_INPUT_IM);
@@ -183,10 +177,11 @@ class WebActions {
         }
     }
 
-    async openACP() {
-        await this.clickAndWaitElementVisible(ui.SETTTING_BUTTON, ui.GENERAL_OPTION, constants.TIMEOUT_WAIT_ELEMENT);
-        await this.clickAndWaitElementVisible(ui.GENERAL_OPTION, ui.GENERAL_TAB,constants.TIMEOUT_WAIT_ELEMENT);
-        await this.clickAndWaitElementVisible(ui.ACP_LINK,ui.IMG_ADMIN_LOGO, constants.TIMEOUT_WAIT_ELEMENT);
+    async openACP() {        
+        await this.clickAndWaitElementVisible(ui.SETTTING_BUTTON, ui.GENERAL_OPTION, constants.TIMEOUT_WAIT_ELEMENT);       
+        await this.clickAndWaitElementVisible(ui.GENERAL_OPTION, ui.GENERAL_TAB,constants.TIMEOUT_WAIT_ELEMENT);        
+        await this.clickAndWaitElementVisible(ui.ACP_LINK,ui.IMG_ADMIN_LOGO, constants.TIMEOUT_WAIT_ELEMENT*10);
+        
     }
 
     async clickPlusButton() {
@@ -194,7 +189,7 @@ class WebActions {
     }
 
     async clickStartChat() {
-        await this.clickIfElementVisible(ui.START_CHAT);
+        await this.clickIfElementVisible(ui.START_CHAT,constants.TIMEOUT_WAIT_ELEMENT*5);
     }
 
     async logout()
@@ -214,7 +209,7 @@ class WebActions {
 
     async clickDoneButton() {
         await this.clickIfElementVisible(ui.CREATE_IM_DONE_BTN);
-        await this.waitElementVisible(ui.HEADER_MODULE);
+        await this.waitElementVisible(ui.HEADER_MODULE,constants.TIMEOUT_WAIT_ELEMENT*5);
     }
 
     async waitElementNotVisible(locator, timeOut = constants.TIMEOUT_WAIT_ELEMENT) {
@@ -278,7 +273,7 @@ class WebActions {
     async verifyPopOutIconDisplay(){
         await this.mouseOver(ui.PIN_CHAT_MOD);
         await Utils.sleep(2); //wait popout button clickable
-        await this.waitElementVisible(ui.POPOUT_BUTTON, constants.TIMEOUT_WAIT_ELEMENT);
+        await this.waitElementVisible(ui.POPOUT_BUTTON, constants.TIMEOUT_WAIT_ELEMENT*5);
     }
 
     async clickInboxIcon() {
@@ -341,7 +336,7 @@ class WebActions {
 
     async verifyChatModuleVisible(muduleName){
         let locator = ui.HEADER_MODULE_NAME.replace("$$",muduleName); 
-        await this.waitElementVisible(locator);
+        await this.waitElementVisible(locator,constants.TIMEOUT_WAIT_ELEMENT*5);
     }
 
     async closeAllGridModules(){

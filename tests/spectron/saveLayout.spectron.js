@@ -27,10 +27,11 @@ let webActions;
         try {
             if (app && app.isRunning()) {
                 jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
-                await app.stop();
+                await app.stop();       
+                await windowAction.closeChromeDriver();   
                 done();
             }
-        } catch (err) {
+        } catch (err) {            
             done.fail(new Error(`Failed at post-condition: ${err}`));
         };
     });

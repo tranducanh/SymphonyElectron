@@ -11,7 +11,7 @@ let app, webDriver, webActions, windowsActions;
 
 !isMac ? describe('Tests for Toast Notification ', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = constants.TIMEOUT_TEST_SUITE;
-
+    let originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
     beforeAll(async (done) => {
         try {
             webDriver = await new WebDriver({ browser: 'chrome' });
@@ -23,23 +23,19 @@ let app, webDriver, webActions, windowsActions;
             await windowsActions.bringToFront("Symphony");
             await windowsActions.reload(); //workaround to show topbar menu
             await webDriver.login(constants.USER_B);
-            done();
-        } catch (err) {
-            await windowsActions.stopApp();
-            await webDriver.quit();
+            await done();
+        } catch (err) {           
             done.fail(new Error(`Unable to start application error: ${err}`));
         };
     });
 
     afterAll(async (done) => {
         try {
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = constants.TIMEOUT_TEST_SUITE;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
             await windowsActions.stopApp();
-            await webDriver.quit();
-            done();
-        } catch (err) {
-            await windowsActions.stopApp();
-            await webDriver.quit();
+            await webDriver.quit();            
+            await done();
+        } catch (err) {           
             done.fail(new Error(`Failed at post-condition: ${err}`));
         };
     });
@@ -66,7 +62,8 @@ let app, webDriver, webActions, windowsActions;
                 //"Mute pop-up alerts on my desktop"=ON
                 await webActions.checkBox(ui.MUTE_POPUP_ALERTS_CKB, true);
                 await webDriver.sendMessages([message2]);
-                await webActions.verifyNoToastNotificationShow(message2);
+                windowsActions.webAction = await webActions;
+                await windowsActions.verifyNotPersistToastNotification(message2);
             }
             done();
         } catch (err) {

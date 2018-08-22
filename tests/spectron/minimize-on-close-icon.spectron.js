@@ -9,7 +9,7 @@ let app, wActions, config;
 
 
 !isMac? describe('Add Test To Verify Minimize on Close', () => {   
-    jasmine.DEFAULT_TIMEOUT_INTERVAL = Application.getTimeOut();
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = 300000;
     let originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
     
     beforeAll(async (done) => {
@@ -44,9 +44,9 @@ let app, wActions, config;
     afterAll(async (done) => {
         jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
         try {            
-            if (app && app.isRunning()) {                 
-                done();         
-                wActions.closeChromeDriver();    
+            if (app && app.isRunning()) {      
+                wActions.closeChromeDriver();               
+                done();   
             }                   
         } catch (error) {         
           done.fail(new Error(`After all: ${error}`));           
@@ -62,11 +62,12 @@ let app, wActions, config;
         if (isWindowsOS) {
             try {
                 let userConfig = await Application.readConfig(config);
+                await console.log("AVT-939:"+userConfig.minimizeOnClose);
                 await wActions.openMenu(["Window", "Minimize on Close"]);
                 if (userConfig.minimizeOnClose != false) {
                     await wActions.openMenu(["Window", "Minimize on Close"]);
                 }
-                await wActions.openMenu(["Window", "Close"]);
+                await wActions.openMenu(["Window", "Close"]);              
                 await wActions.verifyMinimizeWindows();
                 await done();
             } catch (err) {
@@ -89,17 +90,16 @@ let app, wActions, config;
                 let userConfig = await Application.readConfig(config);
                 await wActions.focusWindow();
                 await wActions.openMenu(["Window", "Minimize on Close"]);
+                await console.log("AVT-937:"+userConfig.minimizeOnClose);
                 if (userConfig.minimizeOnClose != false) {
                     await wActions.openMenu(["Window", "Minimize on Close"]);
                 }
-                await wActions.openMenu(["Window", "Close"])
+                await wActions.openMenu(["Window", "Close"]);
                 await wActions.verifyMinimizeWindows();
-
                 await wActions.focusWindow();
                 await wActions.bringToFront("");
                 await Utils.sleep(2);
-                await wActions.pressCtrlW();
-
+                await wActions.pressCtrlW();              
                 await wActions.verifyMinimizeWindows();
                 await done()
             } catch (err) {
@@ -118,26 +118,21 @@ let app, wActions, config;
    */
     it('Verify by deselecting Minimize on Close option once the application is launched', async (done) => {
 
-        if (isWindowsOS) {
-            try {
+        try {
                 let userConfig = await Application.readConfig(config);
                 await wActions.focusWindow();
                 await wActions.openMenu(["Window", "Minimize on Close"]);
+                await console.log("AVT-938:"+userConfig.minimizeOnClose);
                 if (userConfig.minimizeOnClose == false) {
                     await wActions.openMenu(["Window", "Minimize on Close"]);
-                }
-                await wActions.openMenu(["Window", "Close"])
+                }                
+                await wActions.openMenu(["Window", "Close"]);               
                 await Utils.sleep(5);
-                let status = await wActions.isElectronProcessRunning() ;
-                await console.log(status);
+                let status = await wActions.isElectronProcessRunning() ;                
                 await expect(status === false).toBeTruthy();
                 await done();
-            } catch (err) {
+            } catch (err) {               
                 done.fail(new Error(`Verify by deselecting Minimize on Close option once the application is launched: ${err}`));
             };
-        }
-        else {
-            await done();
-        }
-    });
+    })
 }) : describe.skip();

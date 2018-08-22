@@ -3,6 +3,7 @@ const WindowsActions = require('./spectronWindowsActions');
 const { isMac } = require('../../js/utils/misc.js');
 const Utils = require('./spectronUtils');
 
+
 let app;
 let windowActions;
 
@@ -42,7 +43,7 @@ let windowActions;
     it('Verify the production logs exists when clicking on Show logs in Explorer', async (done) => {
         try {
             await windowActions.openMenu(["Help", "Troubleshooting", "Show Logs in Explorer"]);
-            Utils.sleep(2000) //sleep for creating log
+            Utils.sleep(2000) //sleep for creating log            
             await windowActions.verifyLogExported();
             done();
         } catch (err) {

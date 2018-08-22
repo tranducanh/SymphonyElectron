@@ -14,8 +14,7 @@ let app, webActions, windowsActions;
         try {
             app = await new Application({}).startApplication({ testedHost: constants.TESTED_HOST });
             webActions = await new WebActions(app);
-            windowsActions = await new WindowsActions(app);
-            await webActions.login(constants.USER_A);
+            windowsActions = await new WindowsActions(app);            
             done();
         } catch (err) {
             await windowsActions.stopApp();
@@ -40,10 +39,12 @@ let app, webActions, windowsActions;
             jasmine.DEFAULT_TIMEOUT_INTERVAL = constants.TIMEOUT_TEST_SUITE;
             await windowsActions.closeAllPopOutWindow();
             await webActions.closeAllGridModules();
-            await windowsActions.stopApp();
+            await windowsActions.stopApp();           
+            await windowsActions.closeChromeDriver();
             done();
         } catch (err) {
             await windowsActions.stopApp();
+            await windowsActions.closeChromeDriver();
             await done.fail(new Error(`Failed at afterAll: ${err}`));
         };
     });
@@ -56,9 +57,10 @@ let app, webActions, windowsActions;
     it('Verify pop-out chat, inbox', async (done) => {
         try {
             if (await windowsActions.isAppRunning()) {
+                await webActions.login(constants.USER_A);
                 await webActions.createIM(constants.USER_B.name);
                 await webActions.clickPopOutIcon();
-                await windowsActions.verifyPopOutWindowAppear(constants.USER_B.name);
+                await windowsActions.verifyPopOutWindowAppear(constants.USER_B.name);                
                 await webActions.verifyPopInIconDisplay(constants.USER_B.name);
 
                 await webActions.clickInboxIcon();
@@ -66,16 +68,16 @@ let app, webActions, windowsActions;
                 await windowsActions.verifyPopOutWindowAppear("Inbox");
                 await webActions.verifyPopInIconDisplay("Inbox");
 
-                await windowsActions.bringToFront("Symphony");
+             
+                //await windowsActions.bringToFront("Symphony");
                 await webActions.clickInboxIcon();
                 await windowsActions.verifyWindowFocus("Inbox");
-
-                await windowsActions.bringToFront("Symphony");
+                //await webActions.clickInboxPopOutIcon();
+                //await windowsActions.bringToFront("Symphony");
                 await webActions.clickLeftNavItem(constants.USER_B.name);
                 await Utils.sleep(1); //wait for popout overlaying completely
                 await windowsActions.verifyWindowFocus(constants.USER_B.name);
-
-                await windowsActions.bringToFront("Symphony");
+                //await windowsActions.bringToFront("Symphony");
                 await webActions.logout();
                 await webActions.login(constants.USER_A);
                 await windowsActions.verifyPopOutWindowAppear(constants.USER_B.name);
@@ -94,22 +96,22 @@ let app, webActions, windowsActions;
      * Cover scenarios in AVT-1082
      */
     it('Verify pop-in popped-out chat', async (done) => {
-        try {
-            if (await windowsActions.isAppRunning()) {
-                await webActions.createIM(constants.USER_B.name);
-                await webActions.pinChat();
-                await webActions.clickPopOutIcon();
-                await webActions.clickPopInIcon(constants.USER_B.name);
+       try {
+            if (await windowsActions.isAppRunning()) {                
+                await webActions.createIM(constants.USER_B.name);               
+                await webActions.pinChat();                
+                await webActions.clickPopOutIcon();                
+                await webActions.clickPopInIcon(constants.USER_B.name);                
                 await webActions.verifyPopOutIconDisplay();
-
+                 
                 //Verify pinned module is persisted on grid
-                await webActions.createIM(constants.USER_C.name);
-                await webActions.verifyChatModuleVisible(constants.USER_B.name);
+                await webActions.createIM(constants.USER_C.name);               
+                await webActions.verifyChatModuleVisible(constants.USER_B.name);                
                 done();
             }
             done();
-        } catch (err) {
-            done.fail(new Error(`Fail to verify Pop-in popped-out chat: ${err}`));
-        };
+       } catch (err) {
+           done.fail(new Error(`Fail to verify Pop-in popped-out chat: ${err}`));
+       };
     });
 }) : describe.skip();

@@ -13,7 +13,7 @@ const specconst = require('./spectronConstants.js');
 
 let webActions, windowAction;
 
-!isMac ? describe('Test for Badge Count on MAC', () => {
+isMac ? describe('Test for Badge Count on MAC', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = Application.getTimeOut();
     let originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
     beforeAll(async (done) => {

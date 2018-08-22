@@ -66,4 +66,5 @@ let webActions;
             done.fail(new Error(`Fail to keep Always on Top options when multiple applications are opened with error: ${err}`));
         };
     });
+
 }): describe.skip();

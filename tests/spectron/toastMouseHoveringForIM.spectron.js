@@ -11,7 +11,7 @@ const WebActions = require('./spectronWebActions');
 const specconst = require('./spectronConstants.js');
 const Utils = require('./spectronUtils');
 const ifc = require('./spectronInterfaces.js');
-let webActions, windowAction;
+let webActions, windowAction, message;
 
 !isMac ? describe('Verify toast notification for IMs', () => {
   let originalTimeout = specconst.DEFAULT_TIMEOUT_INTERVAL;
@@ -22,44 +22,47 @@ let webActions, windowAction;
       app = await new Application({}).startApplication({ testedHost: specconst.TESTED_HOST, alwaysOnTop: true });
       windowAction = await new WindowsAction(app);
       webActions = await new WebActions(app);
-      windowAction.webAction = webActions;
       done();
     } catch (err) {
       done.fail(new Error(`Unable to start application error: ${err}`));
     };
   });
-  afterAll((done) => {
-    if (app && app.isRunning()) {
-      jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
-      app.stop().then(() => {
-        webdriver.close();
-        webdriver.quit();
+  afterAll(async (done) => {
+    try {
+      if (app && app.isRunning()) {
+        jasmine.DEFAULT_TIMEOUT_INTERVAL = await originalTimeout;
+        await app.stop();
+        await webdriver.quit();
         done();
-        windowAction.closeChromeDriver();
-      }).catch((err) => {
-        done();
-      });
-    }
+      }
+    } catch (err) {
+      done.fail(new Error(`Failed at post-condition: ${err}`));
+    };
   });
   /**
     * Verify toast notification for IMs
     * TC-ID: 3395297
    * Cover scenarios in AVT-1031
    */
-  it('Toast notification should not be closed', async () => {
-    //await console.log(window.navigator.appVersion );
-    await webdriver.startDriver();
-    await webdriver.login(specconst.USER_A);
-    await webdriver.createIM(specconst.USER_B.username);
-    await webActions.login(specconst.USER_B);
-    await windowAction.reload();
-    await app.client.waitForVisible(ifc.SETTTING_BUTTON, Utils.toMs(50));
-    await webActions.clickIfElementVisible(ifc.SETTTING_BUTTON);
-    await windowAction.pressCtrlM();
-    await webdriver.clickLeftNavItem(specconst.USER_B.name);
-    var message = await Utils.randomString();
-    await webdriver.sendMessages([message]);
-    await windowAction.verifyNotCloseToastWhenMouseOver(message);
+  it('Toast notification should not be closed', async (done) => {
+    try {
+      await webdriver.startDriver();
+      await webdriver.login(specconst.USER_A);
+      await webdriver.createIM(specconst.USER_B.username);
+      await webActions.login(specconst.USER_B);
+      await windowAction.reload();
+      await app.client.waitForVisible(ifc.SETTTING_BUTTON, Utils.toMs(50));
+      await webActions.persistToastIM(false);
+      await windowAction.pressCtrlM();
+      await webdriver.clickLeftNavItem(specconst.USER_B.name);
+      message = await Utils.randomString();
+      await webdriver.sendMessages([message]);
+      await windowAction.verifyNotCloseToastWhenMouseOver(message);
+      await done();
+    }
+    catch (err) {
+      done.fail(new Error(`Failed at toast notification should not be closed: ${err}`));
+    };
 
   });
   /**
@@ -67,20 +70,26 @@ let webActions, windowAction;
   * TC-ID: 3395306
  * Cover scenarios in AVT-1032
  */
-  it('Verify toast notification for signals, mentions and keywords', async () => {
-    var nameSignal = await Utils.randomString();
-    var nameHashTag = await Utils.randomString();
-    var roomName = await Utils.randomString();
-    var description = await Utils.randomString();
+  it('Verify toast notification for signals, mentions and keywords', async (done) => {
+    try {
+      let nameSignal = await Utils.randomString();
+      let nameHashTag = await Utils.randomString();
+      let roomName = await Utils.randomString();
+      let description = await Utils.randomString();
 
-    await webdriver.createSignal(nameSignal, nameHashTag);
-    await webdriver.createRoom([specconst.USER_B.username], roomName, description, specconst.TYPE_ROOM.public)
-    await webdriver.clickLeftNavItem(roomName);
+      await webdriver.createSignal(nameSignal, nameHashTag);
+      await webdriver.createRoom([specconst.USER_B.username], roomName, description, specconst.TYPE_ROOM.public)
+      await webdriver.clickLeftNavItem(roomName);
 
-    await webdriver.sendMessages(["#" + nameHashTag]);
-    await windowAction.verifyNotCloseToastWhenMouseOver(specconst.USER_A.name + ": #" + nameHashTag);
-    await webdriver.mentionUserOnChat(specconst.USER_B);
-    await windowAction.verifyNotCloseToastWhenMouseOver(specconst.USER_A.name + ": @" + specconst.USER_B.name);
+      await webdriver.sendMessages(["#" + nameHashTag]);
+      await windowAction.verifyNotCloseToastWhenMouseOver(specconst.USER_A.name + ": #" + nameHashTag);
+      await webdriver.mentionUserOnChat(specconst.USER_B);
+      await windowAction.verifyNotCloseToastWhenMouseOver(specconst.USER_A.name + ": @" + specconst.USER_B.name);
+      await done();
+    }
+    catch (err) {
+      done.fail(new Error(`Failed at Verify toast notification for signals, mentions and keywords: ${err}`));
+    };
   });
 
 }) : describe.skip();

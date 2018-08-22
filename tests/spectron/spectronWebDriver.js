@@ -259,7 +259,7 @@ class WebDriver {
         for (var i = 0; i < messages.length; i++) {
             await this.sendMessage(messages[i]).then(async() =>
             {
-                await this.webAction.verifyToastNotificationShow(messages[i])
+                await this.windowAction.verifyPersistToastNotification(messages[i])
             }).catch((err) => {                
                 console.error(`Toast notification is not show: ${err}`);
             });         

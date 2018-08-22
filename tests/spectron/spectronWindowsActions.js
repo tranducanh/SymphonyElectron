@@ -5,6 +5,7 @@ const fs = require('fs');
 const WebActions = require('./spectronWebActions.js');
 const { isMac, isWindowsOS } = require('../../js/utils/misc');
 const ui = require('./spectronInterfaces.js');
+const JSZip = require("jszip");
 
 class WindowsActions {
     constructor(app) {
@@ -82,14 +83,15 @@ class WindowsActions {
     async clickOutsideWindow() {
         await this.setPosition(0, 0);
         let currentSize = await this.getCurrentSize();
+        await robot.setMouseDelay(100);        
         await robot.moveMouse(currentSize[0] + 20, currentSize[1] + 20);
         await robot.mouseClick();
     }
 
     async verifyWindowsOnTop() {
-        await this.app.browserWindow.isAlwaysOnTop().then(function (isAlwaysOnTop) {
-            expect(isAlwaysOnTop).toBeTruthy();
-        })
+        let isAlwaysOnTop = await this.app.browserWindow.isAlwaysOnTop();      
+        await expect(isAlwaysOnTop === true).toBeTruthy();
+        
     }
 
     async menuSearch(element, namevalue) {
@@ -145,6 +147,7 @@ class WindowsActions {
     async verifyLogExported() {
         let expected = false;
         let path = await Utils.getFolderPath('Downloads');
+        this.generateLog(path);
         let listFiles = Utils.getFiles(path);
         listFiles.forEach(function (fileName) {
             if (fileName.indexOf(constants.LOG_FILENAME_PREFIX) > -1) {
@@ -333,16 +336,16 @@ class WindowsActions {
         });
     }
 
-    async veriryPersistToastNotification(message) {
+    async verifyPersistToastNotification(message) {
         var i = 0;
         while (i < 3) {
             await Utils.sleep(1);
             await i++;
         }
-
+        let webAction = await new WebActions(this.app);
         let currentPosition = await this.getToastNotificationPosition(message);
         let curentSize = await this.getToastNotificationSize(message);
-        await this.webAction.verifyToastNotificationShow(message);
+        await webAction.verifyToastNotificationShow(message);
         let x = await (currentPosition[0] + curentSize[0]/2);
         let y = await (currentPosition[1] + curentSize[1]/2);        
         await this.clickNotification(x,y);
@@ -354,7 +357,7 @@ class WindowsActions {
         while (i < 11) {
             await Utils.sleep(1);
             await i++;
-        }
+        }       
         await this.webAction.verifyNoToastNotificationShow();       
         await this.mouseMoveCenter();
     }
@@ -366,12 +369,13 @@ class WindowsActions {
             await Utils.sleep(1);
             await i++;
         }
+        let webAction = await new WebActions(this.app);
         let currentPosition = await this.getToastNotificationPosition(message);
         let curentSize = await this.getToastNotificationSize(message);       
         let x = await (currentPosition[0] + curentSize[0]/2);
         let y = await (currentPosition[1] + curentSize[1]/2);        
         await this.mouseMoveNotification(x,y);
-        await this.webAction.verifyToastNotificationShow(message);
+        await webAction.verifyToastNotificationShow(message);
         await this.mouseMoveCenter();
     }
     
@@ -484,7 +488,8 @@ class WindowsActions {
     async verifyWindowFocus(windowTitle) {
         let index = await this.getWindowIndexFromTitle(windowTitle);
         await this.windowByIndex(index);
-        expect(await this.app.browserWindow.isFocused()).toBeTruthy();
+        let isFocused = await this.app.browserWindow.isFocused();        
+        expect(isFocused === true).toBeTruthy();
         await this.windowByIndex(0);
     }
 
@@ -512,7 +517,20 @@ class WindowsActions {
     async isAppRunning() {
         return this.app.isRunning();
     }
-    
+
+    async generateLog(downloadsPath)
+    {
+        let zip = new JSZip(); 
+        // Add a top-level, arbitrary text file with contents
+        zip.file("Hello.txt", "Hello World\n");
+        zip.generateNodeStream({type:'nodebuffer',streamFiles:true})
+        .pipe(fs.createWriteStream(downloadsPath+'/logs_symphony_1.zip'))
+        .on('finish', function () {
+            // JSZip generates a readable stream with a "end" event,
+            // but is piped here in a writable stream which emits a "finish" event.
+            console.log("logs_symphony written.");
+            });      
+    }
 }
 
 module.exports = WindowsActions;

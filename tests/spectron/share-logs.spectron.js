@@ -27,7 +27,7 @@ let app = new Application({});
         }).catch((err) => {
             done.fail(new Error(`Unable to start application error: ${err}`));
         });
-    });
+    }); 
 
     function getDownloadsPath() {
         return new Promise(function (resolve, reject) {

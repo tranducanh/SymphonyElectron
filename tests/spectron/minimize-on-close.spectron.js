@@ -42,9 +42,9 @@ let  mainApp = new Application({});
     afterAll(async (done) => {
         jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
         try {            
-            if (app && app.isRunning()) {                
+            if (app && app.isRunning()) {     
+                wActions.closeChromeDriver();              
                 done();         
-                wActions.closeChromeDriver();    
             }                   
         } catch (error) {         
           done.fail(new Error(`After all: ${error}`));         

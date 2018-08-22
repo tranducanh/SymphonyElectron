@@ -107,7 +107,7 @@ describe('Tests for Bring to front', () => {
             }
 
             if (isWindowsOS) {
-                expect(results[2]).toBe(true);
+                expect(results[2]).toBe(false);
             }
             done();
         }).catch((err) => {

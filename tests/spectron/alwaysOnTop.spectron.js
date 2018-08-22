@@ -1,34 +1,20 @@
 const Application = require('./spectronSetup');
-const {isMac} = require('../../js/utils/misc.js');
+const { isMac } = require('../../js/utils/misc.js');
 const robot = require('robotjs');
-
+const WindowsActions = require('./spectronWindowsActions');
 let app = new Application({});
-let configPath;
-let mIsAlwaysOnTop;
+let config,mIsAlwaysOnTop, windowActions;
+
 
 describe('Tests for Always on top', () => {
 
     let originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
     jasmine.DEFAULT_TIMEOUT_INTERVAL = Application.getTimeOut();
 
-    beforeAll((done) => {
-        return app.startApplication({alwaysOnTop: false}).then((startedApp) => {
-            app = startedApp;
-            getConfigPath().then((config) => {
-                configPath = config;
-                done();
-            }).catch((err) => {
-                done.fail(new Error(`Unable to start application error: ${err}`));
-            });
-        }).catch((err) => {
-            done.fail(new Error(`Unable to start application error: ${err}`));
-        });
-    });
-
-    function getConfigPath() {
+    function getConfigPath(app) {
         return new Promise(function (resolve, reject) {
             app.client.addCommand('getUserDataPath', function () {
-                return this.execute(function () {
+                return app.client.execute(function () {
                     return require('electron').remote.app.getPath('userData');
                 })
             });
@@ -39,18 +25,29 @@ describe('Tests for Always on top', () => {
             });
         });
     }
+    beforeAll(async (done) => {
+        try {
+            app = await new Application({}).startApplication({ alwaysOnTop: true });
+            windowActions = await new WindowsActions(app);           
+            config = await getConfigPath(app);
+            done();
+        } catch (err) {
+            done.fail(new Error(`Unable to start application error: ${err}`));
+        };
+    });
 
-    afterAll((done) => {
-        if (app && app.isRunning()) {
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
-            app.stop().then(() => {
+    afterAll(async (done) => {
+        try {
+
+            await windowActions.openMenu(["Window", "Always on Top"]);
+            if (app && app.isRunning()) {
                 jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+                await app.stop();
                 done();
-            }).catch((err) => {
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
-                done.fail(new Error(`alwaysOnTop failed in afterAll with error: ${err}`));
-            });
-        }
+            }
+        } catch (err) {
+            done.fail(new Error(`Failed at post-condition: ${err}`));
+        };
     });
 
     it('should launch the app', (done) => {
@@ -115,22 +112,37 @@ describe('Tests for Always on top', () => {
         }
     });
 
-    it('should check is always on top', (done) => {
-        return Application.readConfig(configPath).then((userData) => {
-            return app.browserWindow.isAlwaysOnTop().then((isAlwaysOnTop) => {
-                mIsAlwaysOnTop = isAlwaysOnTop;
-                if (userData.alwaysOnTop) {
-                    expect(isAlwaysOnTop).toBeTruthy();
-                    done();
-                } else {
-                    expect(isAlwaysOnTop).toBeFalsy();
-                    done();
-                }
-                done();
-            });
-        }).catch((err) => {
+    it('should check is always on top', async (done) => {
+        let userData = await Application.readConfig(config);
+        mIsAlwaysOnTop = await app.browserWindow.isAlwaysOnTop();
+        try {
+            if (userData.alwaysOnTop) {
+                await expect(mIsAlwaysOnTop).toBeTruthy();
+                await done();
+            } else {
+                await expect(mIsAlwaysOnTop).toBeFalsy();
+                await done();
+            }
+        }
+        catch (err) {
             done.fail(new Error(`alwaysOnTop failed in readConfig with error: ${err}`));
-        });
+        };
+
+        // return Application.readConfig(configPath).then((userData) => {
+        //     return app.browserWindow.isAlwaysOnTop().then((isAlwaysOnTop) => {
+        //         mIsAlwaysOnTop = isAlwaysOnTop;
+        //         if (userData.alwaysOnTop) {
+        //             expect(isAlwaysOnTop).toBeTruthy();
+        //             done();
+        //         } else {
+        //             expect(isAlwaysOnTop).toBeFalsy();
+        //             done();
+        //         }
+        //         done();
+        //     });
+        // }).catch((err) => {
+        //     done.fail(new Error(`alwaysOnTop failed in readConfig with error: ${err}`));
+        // });
     });
 
     it('should toggle the always on top property to true', (done) => {
@@ -179,7 +191,7 @@ describe('Tests for Always on top', () => {
             });
         } else {
             return app.browserWindow.isAlwaysOnTop().then((isAlwaysOnTop) => {
-                expect(isAlwaysOnTop).toBeFalsy();
+                expect(isAlwaysOnTop).toBeTruthy();
                 done();
             }).catch((err) => {
                 done.fail(new Error(`alwaysOnTop failed in isAlwaysOnTop with error: ${err}`));

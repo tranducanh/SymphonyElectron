@@ -25,9 +25,10 @@ describe('Tests for Resizing windows', () => {
             if (app && app.isRunning()) {
                 jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
                 await app.stop();
+                await windowActions.closeChromeDriver();
                 done();
             }
-        } catch (err) {
+        } catch (err) {          
             done.fail(new Error(`Failed at post-condition: ${err}`));
         };
     });
