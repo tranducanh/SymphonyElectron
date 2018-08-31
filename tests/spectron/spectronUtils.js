@@ -1,39 +1,56 @@
 const childProcess = require('child_process');
-const { isMac } = require('../../js/utils/misc.js');
-// const applescript = require('applescript');
+const path = require('path');
+const fs = require('fs');
+
 
 class Utils {
     static async openAppInMaximize(appPath) {
-        if (isMac) {
-            var applescript = require('applescript');
-            var script = 'tell application "TextEdit" tell window 1 set zoomed to true end tell end tell';
-            // await applescript.execFile('/Users/test/Desktop/Spectron/SymphonyElectron/tests/spectron/test.scpt', function (err, rtn) {
-            //     if (err) {
-            //         console.log(err);
-            //     }
-            //     if (Array.isArray(rtn)) {
-            //         rtn.forEach(function (songName) {
-            //             console.log(songName);
-            //         });
-            //     }
-            // });
-            await applescript.execString('if application "TextEdit" is running then'
-                                        + 'do shell script ("pkill -9 TextEdit*")'
-                                        + 'end if'
-                                        + 'do shell script "open -a TextEdit"');
-        } else {
-            await childProcess.exec('start /MAX ' + appPath);
-        }
+        await childProcess.exec('start /MAX ' + appPath);
     }
 
     static async killProcess(processName) {
         await childProcess.exec('taskkill /f /t /im ' + processName);
     }
 
-    static async sleep(ms) {
+    static async killProcessOnMac(processName)
+    {
+        await childProcess.exec('killall -9 ' + processName);
+    }
+    static async sleep(second) {
         return new Promise(resolve => {
-            setTimeout(resolve, ms)
+            setTimeout(resolve, this.toMs(second));
         })
+    }
+
+    static getFolderPath(folderName) {
+        return path.join(require('os').homedir(), folderName);
+    }
+
+    static getFiles(path) {
+        return fs.readdirSync(path);
+    }
+
+    static toMs(second) {
+        return second * 1000;
+    }
+
+    static async randomString() {
+        var chars = await "0123456789ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz";
+        var string_length = await 8;
+        var randomstring = await '';
+        for (var i = 0; i < string_length; i++) {
+            var rnum = await Math.floor(Math.random() * chars.length);
+            randomstring += await chars.substring(rnum, rnum + 1);
+        }
+        return randomstring;
+    }
+
+    static execPromise(command) {
+        return new Promise(function(resolve, reject) {
+            childProcess.exec(command, (error, stdout, stderr) => {    
+                resolve(stdout.trim());
+            });
+        });
     }
 }
 

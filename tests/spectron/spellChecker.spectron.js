@@ -1,8 +1,10 @@
 const Application = require('./spectronSetup');
 const path = require('path');
 const {isMac} = require('../../js/utils/misc.js');
+const WindowsAction = require('./spectronWindowsActions');
 const robot = require('robotjs');
 let app = new Application({});
+let windowAction;
 
 describe('Tests for spellChecker', () => {
 
@@ -12,6 +14,7 @@ describe('Tests for spellChecker', () => {
     beforeAll((done) => {
         app.startApplication().then((startedApp) => {
             app = startedApp;
+            windowAction = new WindowsAction(app);
             done();
         }).catch((err) => {
             done.fail(new Error(`Unable to start application error: ${err}`));
@@ -22,8 +25,10 @@ describe('Tests for spellChecker', () => {
         if (app && app.isRunning()) {
             jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
             app.stop().then(() => {
+                windowAction.closeChromeDriver();    
                 done();
             }).catch((err) => {
+                windowAction.closeChromeDriver();    
                 done();
             });
         }

@@ -3,7 +3,7 @@ const path = require('path');
 
 let app = new Application({});
 
-describe('Tests for pop outs', () => {
+describe('Tests for pop outs reload scenario', () => {
 
     let originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
     jasmine.DEFAULT_TIMEOUT_INTERVAL = Application.getTimeOut();
@@ -60,40 +60,31 @@ describe('Tests for pop outs', () => {
         }, 2000);
     });
 
-    it('should click on the external link and verify window', function () {
+    it('should open a child window from pop-out and verify', function (done) {
         return app.client.windowByIndex(1).then(() => {
-            app.client.waitForExist('#open-in-browser', 2000);
-            app.client.moveToObject('#open-in-browser', 10, 10);
-            app.client.leftClick('#open-in-browser', 10, 10);
+            app.client.waitForExist('#open-win', 2000);
+            app.client.moveToObject('#open-win', 10, 10);
+            app.client.leftClick('#open-win', 10, 10);
 
-            return app.client.getWindowCount().then((count) => {
-                expect(count === 2).toBeTruthy();
-            });
+            setTimeout(() => {
+                app.client.getWindowCount().then((count) => {
+                    expect(count === 3).toBeTruthy();
+                    done();
+                });
+            }, 2000);
         });
     });
 
-    it('should open a child window from pop-out and verify', function (done) {
-        app.client.waitForExist('#open-win', 2000);
-        app.client.moveToObject('#open-win', 10, 10);
-        app.client.leftClick('#open-win', 10, 10);
+    it('should close pop-out window when main window is reloaded', function (done) {
+        return app.client.windowByIndex(0).then(() => {
+            app.browserWindow.reload();
 
-        setTimeout(() => {
-            app.client.getWindowCount().then((count) => {
-                expect(count === 3).toBeTruthy();
-                done();
-            });
-        }, 2000);
-    });
-
-    it('should click on the external link in a child pop-out without creating a window', function () {
-        return app.client.windowByIndex(2).then(() => {
-            app.client.waitForExist('#open-in-browser', 2000);
-            app.client.moveToObject('#open-in-browser', 10, 10);
-            app.client.leftClick('#open-in-browser', 10, 10);
-
-            return app.client.getWindowCount().then((count) => {
-                expect(count === 3).toBeTruthy();
-            });
+            setTimeout(() => {
+                app.client.getWindowCount().then((count) => {
+                    expect(count === 1).toBeTruthy();
+                    done();
+                });
+            }, 2000);
         });
     });
 });

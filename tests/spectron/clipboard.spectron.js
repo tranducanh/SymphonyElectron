@@ -11,6 +11,7 @@ describe('Tests for clipboard', () => {
     beforeAll((done) => {
         return app.startApplication().then((startedApp) => {
             app = startedApp;
+            app.client.url('file:///' + path.join(__dirname, '..', '..', 'demo/index.html'));
             done();
         }).catch((err) => {
             done.fail(new Error(`Unable to start application error: ${err}`));
@@ -26,24 +27,7 @@ describe('Tests for clipboard', () => {
                 done();
             });
         }
-    });
-
-    it('should launch the app', (done) => {
-        return app.client.waitUntilWindowLoaded().then(() => {
-            return app.client.getWindowCount().then((count) => {
-                expect(count === 1).toBeTruthy();
-                done();
-            }).catch((err) => {
-                done.fail(new Error(`clipboard failed in getWindowCount with error: ${err}`));
-            });
-        }).catch((err) => {
-            done.fail(new Error(`clipboard failed in waitUntilWindowLoaded with error: ${err}`));
-        });
-    });
-
-    it('should check window count', () => {
-        return app.client.url('file:///' + path.join(__dirname, '..', '..', 'demo/index.html'));
-    });
+    });   
 
     it('should set the username field', () => {
         return app.client
