@@ -257,10 +257,13 @@ class WebDriver {
     }
 
     async sendMessagesAndVerifyToast(messages) {
+        console.log("------");
         for (var i = 0; i < messages.length; i++) {          
             await this.webActions.clickPlusButton();
             await this.windowAction.pressCtrlM(); 
-            await this.sendMessage(messages[i]);           
+            await this.sendMessage(messages[i]);   
+            
+            console.log("222");       
             await this.windowAction.verifyPersistToastNotification(messages[i]);          
         }
     }

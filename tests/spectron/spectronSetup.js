@@ -56,6 +56,7 @@ class App {
             }
             await this.app.browserWindow.minimize();
             await this.app.browserWindow.restore();
+            
             return this.app;
         } catch (err) { 
             throw new Error("Unable to start application " + err);

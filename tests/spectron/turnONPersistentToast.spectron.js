@@ -3,7 +3,7 @@ const WebDriver = require('./spectronWebDriver');
 const { isMac } = require('../../js/utils/misc.js');
 const Utils = require('./spectronUtils');
 var app = new Application({}); 
-var webdriver = new WebDriver({ browser: 'chrome' });
+var webdriver ;//= new WebDriver({ browser: 'chrome' });
 const WindowsAction = require('./spectronWindowsActions');
 const WebActions = require('./spectronWebActions');
 const ifc = require('./spectronInterfaces.js');
@@ -16,7 +16,7 @@ describe('Verify toast notification when Persist Notification is ON', () => {
     beforeAll(async(done) => {
         try
         {
-            app = await new Application({}).startApplication({testedHost:specconst.TESTED_HOST, alwaysOnTop: true});
+            app = await new Application({}).startApplication({testedHost:specconst.TESTED_HOST, alwaysOnTop: false});
             windowAction = await new WindowsAction(app);
             webActions = await new WebActions(app);            
             done();
@@ -48,6 +48,7 @@ describe('Verify toast notification when Persist Notification is ON', () => {
         await webdriver.login(specconst.USER_A);
         await webdriver.closeAllGridModules();  
         await webdriver.createIM(specconst.USER_B.username);       
+        app = await new Application({}).startApplication({testedHost:specconst.TESTED_HOST, alwaysOnTop: false});
         await webActions.login(specconst.USER_B);
         
         await windowAction.reload(); 

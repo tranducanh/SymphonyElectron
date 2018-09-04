@@ -157,7 +157,7 @@ class WindowsActions {
     async actionForMenusOnMac(arrMenu) {
         let webAction = await new WebActions(this.app);
         //await this.app.browserWindow.getBounds().then(async (bounds) => {
-            await robot.setMouseDelay(100);
+            await robot.setMouseDelay(2000);
             let x = 5;
             let y = 5;
             await robot.moveMouseSmooth(x, y);
@@ -282,8 +282,14 @@ class WindowsActions {
     }
 
     async pressCtrlM() {
-        await robot.keyToggle('m', 'down', ['control']);
-        await robot.keyToggle('m', 'up', ['control']);
+        if (!isMac) {
+            await robot.keyToggle('m', 'down', ['control']);
+            await robot.keyToggle('m', 'up', ['control']);
+        }
+        else {
+            await robot.keyToggle('m', 'down', ['command']);
+            await robot.keyToggle('m', 'up', ['command']);
+        }
     }
 
     async pressF11() {
@@ -322,14 +328,14 @@ class WindowsActions {
     }
 
     async clickNotification(x,y) {   
-        await robot.setMouseDelay(50);   
+        await robot.setMouseDelay(500);   
         await robot.moveMouseSmooth(x, y);
         await robot.moveMouse(x, y);
         await robot.mouseClick();      
     }
 
     async mouseMoveNotification(x,y) {
-        await robot.setMouseDelay(50);   
+        await robot.setMouseDelay(500);   
         await robot.moveMouseSmooth(x, y);
         await robot.moveMouse(x, y);      
     }
@@ -346,18 +352,23 @@ class WindowsActions {
     }
 
     async verifyPersistToastNotification(message) {
-        var i = 0;
-        while (i < 5) {
-            await Utils.sleep(1);
-            await i++;
+        let i = 0
+        let wincount = await this.app.client.getWindowCount();
+        while (wincount < 2) {
+            wincount = await this.app.client.getWindowCount();
+            await console.log("wincount:"+wincount);
         }
+       
         let webAction = await new WebActions(this.app);
         let currentPosition = await this.getToastNotificationPosition(message);
         let curentSize = await this.getToastNotificationSize(message);
-        await webAction.verifyToastNotificationShow(message);
+        await console.log("333333");
+        //await webAction.verifyToastNotificationShow(message);
         let x = await (currentPosition[0] + curentSize[0]/2);
-        let y = await (currentPosition[1] + curentSize[1]/2);        
+        let y = await (currentPosition[1] + curentSize[1]/2);    
+        await console.log(x+"++++"+y);    
         await this.clickNotification(x,y);
+        await console.log(x+"---"+y);
         await this.mouseMoveCenter();
     }
 
@@ -437,6 +448,7 @@ class WindowsActions {
     async getToastNotificationIndex(message) {
         for (let i = 0; i < 10; i++) {
             let winCount = await this.app.client.getWindowCount();
+            console.log("~~~"+winCount)
             if (winCount > 1) {
                 for (let j = 1; j < winCount; j++) {
                     await this.app.client.windowByIndex(j);
@@ -452,8 +464,10 @@ class WindowsActions {
 
     async getToastNotificationPosition(message) {
         let index = await this.getToastNotificationIndex(message);
+        console.log("---"+index);
         await this.windowByIndex(index);
         let currentPosition = await this.getCurrentPosition();
+        
         await this.windowByIndex(0);
         return currentPosition;
     }

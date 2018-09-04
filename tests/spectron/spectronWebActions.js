@@ -53,7 +53,7 @@ class WebActions {
     }
 
     async inputText(el, data) {
-        var obj = await this.getElementByXPath(el);
+        let obj = await this.getElementByXPath(el);
         if (obj != null)
             await this.app.client.setValue(el, data);
     }
@@ -97,9 +97,13 @@ class WebActions {
     async verifyToastNotificationShow(message) {
         let show = false;
         for (let i = 0; i < 10; i++) {
+            console.log("ver ----"+i)
             let winCount = await this.app.client.getWindowCount();
-            if (winCount > 1) {
-                for (let j = 1; j < winCount; j++) {
+            console.log("winCount ----"+winCount)
+            if (winCount >= 1) {
+                let text =  this.app.client.getText(ui.TOAST_MESSAGE_CONTENT)
+                await console.log( text)
+                for (let j = 0; j < winCount; j++) {
                     await this.app.client.windowByIndex(j);
                     if (await this.app.client.getText(ui.TOAST_MESSAGE_CONTENT) === message) {
                         show = true;
@@ -167,6 +171,8 @@ class WebActions {
     async login(user) {
         await this.inputText(ui.SIGN_IN_EMAIL, user.username);
         await this.inputText(ui.SIGN_IN_PASSWORD, user.password);
+        await Utils.sleep(10);
+        await this.clickIfElementVisible(ui.SIGN_IN_BUTTON);
         await this.clickAndWaitElementVisible(ui.SIGN_IN_BUTTON, ui.SETTTING_BUTTON, constants.TIMEOUT_PAGE_LOAD);
         //await this.waitElementNotVisible(ui.SPINNER);
     }

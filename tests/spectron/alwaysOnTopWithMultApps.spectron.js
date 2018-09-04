@@ -8,7 +8,7 @@ let app;
 let windowActions;
 let webActions;
 
-!isMac ? describe('Tests for always on top with mult-apps are opened', () => {
+describe('Tests for always on top with mult-apps are opened', () => {
 
     let originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
     jasmine.DEFAULT_TIMEOUT_INTERVAL = Application.getTimeOut();
@@ -67,4 +67,4 @@ let webActions;
         };
     });
 
-}): describe.skip();
+});

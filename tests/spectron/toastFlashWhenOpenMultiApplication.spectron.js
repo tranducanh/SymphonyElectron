@@ -52,7 +52,7 @@ describe('Verify Flash notification in taskbar option when multiple applications
             await webActions.login(specconst.USER_B);
             await windowAction.reload();
             await app.client.waitForVisible(ifc.SETTTING_BUTTON, Utils.toMs(50));
-            await webActions.persistToastIM(true);
+            //await webActions.persistToastIM(true);
             await webdriver.clickLeftNavItem(specconst.USER_B.name);
             let messages = [];
             await messages.push(await Utils.randomString());
