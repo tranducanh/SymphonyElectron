@@ -1,6 +1,7 @@
-const { Builder, By, Key, until } = require('selenium-webdriver')
+const { Builder, By, Key, until,Actions } = require('selenium-webdriver')
 require('selenium-webdriver/chrome');
 require('chromedriver');
+const Utils = require('./spectronUtils');
 var assert = require('assert');
 const ui = require('./spectronInterfaces.js');
 const specconst = require('./spectronConstants.js');
@@ -256,14 +257,60 @@ class WebDriver {
     }
 
     async sendMessagesAndVerifyToast(messages) {
-        for (var i = 0; i < messages.length; i++) {
-            await this.sendMessage(messages[i]).then(async() =>
+        
+        for (var i = 0; i < messages.length; i++) {          
+            await this.webActions.clickPlusButton();
+            await this.windowAction.pressCtrlM(); 
+            await this.sendMessage(messages[i]).then(async ()=>
             {
-                await this.webAction.verifyToastNotificationShow(messages[i])
-            }).catch((err) => {                
-                console.error(`Toast notification is not show: ${err}`);
-            });         
+                await Utils.sleep(1);
+                let wincount = await  this.windowAction.app.client.getWindowCount()
+                console.log("wincounttt::"+wincount);
+                console.log (wincount)
+                let data  = await  this.windowAction.app.client.windowHandles();
+                console.log (data)
+                await Utils.sleep(1);
+                 wincount = await  this.windowAction.app.client.getWindowCount()
+                console.log("wincounttt::"+wincount);
+                console.log (wincount)
+                await Utils.sleep(1);
+                 wincount = await  this.windowAction.app.client.getWindowCount()
+                console.log("wincounttt::"+wincount);
+                console.log (wincount)
+                await  this.windowAction.app.client.windowByIndex(wincount-1).then(async()=>{
+                    let title = await this.windowAction.app.browserWindow.getTitle()
+                    console.log (title)
+                });
+            });   
+            await this.windowAction.verifyPersistToastNotification(messages[i]);          
         }
+    }
+    async closeAllGridModules(){
+        let count = await this.getCount(ui.HEADER_MODULE);
+        for (let i=1; i<= count; i++){
+            let header = ui.HEADER_MODULES.replace("$$",1); 
+            let closeButton = ui.CLOSE_MODULES.replace("$$",1);
+            let pinButton = ui.PIN_CHAT_MODS.replace("$$",1);
+            await this.clickIfElementVisible(header);            
+            await this.clickIfElementVisible(pinButton);
+            await this.clickIfElementVisible(closeButton);
+        }
+    }
+    
+    async clickIfElementVisible(selector) {
+        let el = await this.getElementByXPath(selector);
+        await el.click();
+    }
+
+    async getCount(locator){
+        let elements = await this.driver.findElements(By.xpath(locator));      
+        return elements.length;
+    }
+
+    async mouseOver(locator) {
+        let el = await this.getElementByXPath(locator);
+        let builder = await new Actions(this.driver);   
+        builder.moveToElement(el, 20, 20).click().build().perform();
     }
 }
 module.exports = WebDriver;

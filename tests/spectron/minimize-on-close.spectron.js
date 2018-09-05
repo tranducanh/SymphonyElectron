@@ -3,11 +3,11 @@ const { isMac } = require('../../js/utils/misc');
 const robot = require('robotjs');
 const WindowsActions = require('./spectronWindowsActions');
 const Utils = require('./spectronUtils');
-let configPath,wActions,app;
-let  mainApp = new Application({});
+let configPath, wActions, app;
+let mainApp = new Application({});
 
-!isMac? describe('Tests for Minimize on Close', () => {  
-    
+describe('Tests for Minimize on Close', () => {
+
     jasmine.DEFAULT_TIMEOUT_INTERVAL = Application.getTimeOut();
     let originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
 
@@ -15,7 +15,7 @@ let  mainApp = new Application({});
         try {
             app = await mainApp.startApplication({ alwaysOnTop: false });
             await Utils.sleep(2);
-            wActions = await new WindowsActions(app);           
+            wActions = await new WindowsActions(app);
             configPath = await getConfigPath();
             await wActions.focusWindow();
             await done();
@@ -41,74 +41,52 @@ let  mainApp = new Application({});
 
     afterAll(async (done) => {
         jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
-        try {            
-            if (app && app.isRunning()) {                
-                done();         
-                wActions.closeChrome();    
-            }                   
-        } catch (error) {         
-          done.fail(new Error(`After all: ${error}`));         
-           
+        try {
+            if (app && app.isRunning()) {
+                wActions.closeChromeDriver();
+                done();
+            }
+        } catch (error) {
+            done.fail(new Error(`After all: ${error}`));
+
         }
     });
 
-    it('should launch the app', (done) => {
-        return app.client.waitUntilWindowLoaded().then(() => {
-            return app.client.getWindowCount().then((count) => {
-                expect(count === 1).toBeTruthy();
-                done();
-            }).catch((err) => {
-                done.fail(new Error(`minimize-on-close failed in getWindowCount with error: ${err}`));
-            });
-        }).catch((err) => {
-            done.fail(new Error(`minimize-on-close failed in waitUntilWindowLoaded with error: ${err}`));
-        });
-    });
-
-    it('should check window count', (done) => {
-        return app.client.getWindowCount().then((count) => {
-            expect(count === 1).toBeTruthy();
-            done();
-        }).catch((err) => {
-            done.fail(new Error(`minimize-on-close failed in getWindowCount with error: ${err}`));
-        });
-    });
-
-    it('should check browser window visibility', (done) => {
-        return app.browserWindow.isVisible().then((isVisible) => {
-            expect(isVisible).toBeTruthy();
-            done();
-        }).catch((err) => {
-            done.fail(new Error(`minimize-on-close failed in isVisible with error: ${err}`));
-        });
-    });
-
-    it('should bring the app to top', () => {
-        app.browserWindow.focus();
-        return app.browserWindow.setAlwaysOnTop(true).then(() => {
-            return app.browserWindow.isAlwaysOnTop().then((isOnTop) => {
-                expect(isOnTop).toBeTruthy();
-            });
-        });
-    });
-
-    it('should check whether the app is minimized', async(done) => {
+    it('should check whether the app is minimized', async (done) => {
         try {
             let userConfig = await Application.readConfig(configPath);
-            await wActions.focusWindow();
-            await wActions.openMenu(["Window", "Minimize on Close"]);
-            if (userConfig.minimizeOnClose == false) {
+
+            await wActions.bringToFront("Symphony");
+            if (!isMac)
                 await wActions.openMenu(["Window", "Minimize on Close"]);
+            else
+                await wActions.openMenuOnMac(["View", "Minimize on Close"]);
+            if (userConfig.minimizeOnClose == false) {
+                if (!isMac)
+                    await wActions.openMenu(["Window", "Minimize on Close"]);
+                else
+                    await wActions.openMenuOnMac(["View", "Minimize on Close"]);
             }
-            await wActions.openMenu(["Window", "Close"])
-            await Utils.sleep(5);
-            let status = await wActions.isElectronProcessRunning() ;
-            await console.log(status);
+            if (!isMa)
+                await wActions.openMenu(["Window", "Close"])
+            else
+                await wActions.openMenuOnMac(["View", "Minimize on Close"]);
+            await Utils.sleep(1);
+            let status = await wActions.isElectronProcessRunning();
             await expect(status === false).toBeTruthy();
             await done();
         } catch (err) {
             done.fail(new Error(`should check whether the app is minimized: ${err}`));
-        };   
+        };
     });
 
-}) : describe.skip();
+
+
+})
+
+
+
+
+
+
+

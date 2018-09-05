@@ -8,30 +8,32 @@ const WindowsAction = require('./spectronWindowsActions');
 const WebActions = require('./spectronWebActions');
 const ifc = require('./spectronInterfaces.js');
 const specconst = require('./spectronConstants.js');
-let webActions, windowAction;
+let webActions, windowAction,message;
 
 !isMac ? describe('Verify toast notification when Persist Notification is ON', () => {
-    jasmine.DEFAULT_TIMEOUT_INTERVAL = 300000;   
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = specconst.TIMEOUT_TEST_SUITE;   
+    let originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
     beforeAll(async(done) => {
         try
         {
             app = await new Application({}).startApplication({testedHost:specconst.TESTED_HOST, alwaysOnTop: true});
             windowAction = await new WindowsAction(app);
-            webActions = await new WebActions(app);
+            webActions = await new WebActions(app);            
             done();
         } catch(err) {
             done.fail(new Error(`Unable to start application error: ${err}`));
         };
     });
+    
     afterAll(async (done) => {
         try {
             if (app && app.isRunning()) {
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = await originalTimeout;
                 await app.stop();    
-                await webdriver.quit();
+                await webdriver.quit();                    
                 done();
             }
-        } catch (err) {
+        } catch (err) {       
             done.fail(new Error(`Failed at post-condition: ${err}`));
         };
     });
@@ -44,21 +46,22 @@ let webActions, windowAction;
 
         await webdriver.startDriver();
         await webdriver.login(specconst.USER_A);
+        await webdriver.closeAllGridModules();  
         await webdriver.createIM(specconst.USER_B.username);       
         await webActions.login(specconst.USER_B);
         
         await windowAction.reload(); 
-        await app.client.waitForVisible(ifc.SETTTING_BUTTON, Utils.toMs(50));       
-        await webActions.persistToastIM();
+        await app.client.waitForVisible(ifc.SETTTING_BUTTON, Utils.toMs(30));       
+        await webActions.persistToastIM(true);
     
         await windowAction.pressCtrlM();
-        var message = await Utils.randomString();
+        message = await Utils.randomString();
         await webdriver.sendMessages([message]);
-        await windowAction.veriryPersistToastNotification(message);
-        await webdriver.startDriver();
+        await windowAction.verifyPersistToastNotification(message);   
+        await windowAction.pressCtrlM();     
         await webdriver.createMIM([specconst.USER_B.username, specconst.USER_C.username]);
         await webdriver.sendMessages([message]);
-        await windowAction.veriryPersistToastNotification(message);
+        await windowAction.verifyPersistToastNotification(message);
      
     })
      /**
@@ -67,17 +70,18 @@ let webActions, windowAction;
     * Cover scenarios in AVT-1027
     */
    it('Toast notification appears on screen and should disappear in few seconds IM', async () => {
-    
-        await windowAction.showWindow();
-        await app.client.waitForVisible(ifc.SETTTING_BUTTON, Utils.toMs(50));
-        await webActions.persistToastIM();
+        await windowAction.bringToFront("Symphony"); 
+        await Utils.sleep(5);
+        await webActions.persistToastIM(false);
+        await windowAction.pressCtrlM();
         await webdriver.clickLeftNavItem(specconst.USER_B.name);
-        var message = await Utils.randomString();
+        message = await Utils.randomString();
         await webdriver.sendMessages([message]);
-        await windowAction.verifyNotPersistToastNotification("Electron");
+        windowAction.webAction = await webActions;
+        await windowAction.verifyNotPersistToastNotification();
         await webdriver.createMIM([specconst.USER_B.username, specconst.USER_C.username]);      
         await webdriver.sendMessages([message]);
-        await windowAction.verifyNotPersistToastNotification("Electron");
+        await windowAction.verifyNotPersistToastNotification();
       
   })
  

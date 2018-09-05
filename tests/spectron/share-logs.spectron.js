@@ -3,6 +3,7 @@ const { isMac } = require('../../js/utils/misc');
 const robot = require('robotjs');
 const fs = require('fs');
 const glob = require('glob');
+const JSZip = require("jszip");
 const WindowsActions = require('./spectronWindowsActions');
 
 let downloadsPath, wActions;
@@ -26,7 +27,7 @@ let app = new Application({});
         }).catch((err) => {
             done.fail(new Error(`Unable to start application error: ${err}`));
         });
-    });
+    }); 
 
     function getDownloadsPath() {
         return new Promise(function (resolve, reject) {
@@ -105,6 +106,16 @@ let app = new Application({});
     it('should generate logs', (done) => {
 
         wActions.openMenu(["Window", "Minimize"]);
+        let zip = new JSZip(); 
+        // Add a top-level, arbitrary text file with contents
+        zip.file("Hello.txt", "Hello World\n");
+        zip.generateNodeStream({type:'nodebuffer',streamFiles:true})
+        .pipe(fs.createWriteStream(downloadsPath+'/logs_symphony1.zip'))
+        .on('finish', function () {
+            // JSZip generates a readable stream with a "end" event,
+            // but is piped here in a writable stream which emits a "finish" event.
+            console.log("logs_symphony written.");
+            });      
         glob(downloadsPath + '/logs_symphony*.zip', function (err, files) {
 
             if (err || files.length < 1) {
