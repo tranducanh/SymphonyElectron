@@ -45,8 +45,7 @@ describe('Add Test To Verify Minimize on Close', () => {
         jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
         try {
             if (app && app.isRunning()) {
-                if (isMac) {
-                    await console.log("00000")
+                if (isMac) {                   
                     //await wActions.closeChromeDriverOnMac();
                     await app.stop();
                 }
@@ -99,43 +98,38 @@ describe('Add Test To Verify Minimize on Close', () => {
     * Cover scenarios in AVT-937
     */
     it('Close window when "Minimize on Close" is ON', async (done) => {
-        
-            try {
-                let userConfig = await Application.readConfig(config);
-                await wActions.bringToFront("Symphony");
+
+        try {
+            let userConfig = await Application.readConfig(config);
+            await wActions.bringToFront("Symphony");
+            if (!isMac)
+                await wActions.openMenu(["Window", "Minimize on Close"]);
+            else
+                await wActions.openMenuOnMac(["View", "Minimize on Close"]);
+            //await Utils.sleep(5);               
+            if (userConfig.minimizeOnClose === true) {
                 if (!isMac)
                     await wActions.openMenu(["Window", "Minimize on Close"]);
-                else
+                else {
                     await wActions.openMenuOnMac(["View", "Minimize on Close"]);
-                //await Utils.sleep(5);
-                await console.log("1111");
-                if (userConfig.minimizeOnClose === true) {
-                    if (!isMac)
-                        await wActions.openMenu(["Window", "Minimize on Close"]);
-                    else
-                    {
-                        await wActions.openMenuOnMac(["View", "Minimize on Close"]);
-                        await console.log("2222");
-                    
-                    }
                 }
-                //userConfig = await Application.readConfig(config);
-                if (!isMac)
+            }
+            if (!isMac) {
                 await wActions.openMenu(["Window", "Close"]);
-            else
+            }
+            else {
                 await wActions.openMenuOnMac(["Window", "Close"]);
-                await wActions.verifyMinimizeWindows();
-                await wActions.bringToFront("Symphony");
-                await console.log("333");
-                await Utils.sleep(2);
-                await wActions.pressCtrlW();
-                await wActions.verifyMinimizeWindows();
-                await console.log("44444");
-                await done()
-            } catch (err) {
-                done.fail(new Error(`Close window when "Minimize on Close" is ON: ${err}`));
-            };
-        
+            }
+            await wActions.verifyMinimizeWindows();
+            await wActions.bringToFront("Symphony");            
+            await Utils.sleep(2);
+            await wActions.pressCtrlW();
+            await wActions.verifyMinimizeWindows();            
+            await done()
+        } catch (err) {
+            done.fail(new Error(`Close window when "Minimize on Close" is ON: ${err}`));
+        };
+
     });
 
     /**
@@ -146,15 +140,14 @@ describe('Add Test To Verify Minimize on Close', () => {
     it('Verify by deselecting Minimize on Close option once the application is launched', async (done) => {
 
         try {
-            let userConfig = await Application.readConfig(config);
-            await console.log("AAAAA");
+            let userConfig = await Application.readConfig(config);           
             await wActions.bringToFront("Symphony");
+            let count = await app.client.getWindowCount();
+            console.log(count);
             if (!isMac)
                 await wActions.openMenu(["Window", "Minimize on Close"]);
             else
                 await wActions.openMenuOnMac(["View", "Minimize on Close"]);
-
-            await console.log("BBBBB");    
             if (userConfig.minimizeOnClose == false) {
                 if (!isMac)
                     await wActions.openMenu(["Window", "Minimize on Close"]);
@@ -164,9 +157,16 @@ describe('Add Test To Verify Minimize on Close', () => {
             if (!isMac)
                 await wActions.openMenu(["Window", "Close"]);
             else
-                await wActions.openMenuOnMac(["Window", "Close"]);
-            let status = await wActions.isElectronProcessRunning();
-            await expect(status === false).toBeTruthy();
+                await wActions.openMenuOnMac(["Window", "Close"]);   
+            try
+            {
+                count = await app.client.getWindowCount();
+            }
+            catch(err1)
+            {
+                count =0;
+            }
+            await expect(count === 0).toBeTruthy();
             await done();
         } catch (err) {
             done.fail(new Error(`should check whether the app is minimized: ${err}`));

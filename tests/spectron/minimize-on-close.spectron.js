@@ -3,7 +3,7 @@ const { isMac } = require('../../js/utils/misc');
 const robot = require('robotjs');
 const WindowsActions = require('./spectronWindowsActions');
 const Utils = require('./spectronUtils');
-let configPath, wActions, app;
+let config, wActions, app;
 let mainApp = new Application({});
 
 describe('Tests for Minimize on Close', () => {
@@ -16,7 +16,7 @@ describe('Tests for Minimize on Close', () => {
             app = await mainApp.startApplication({ alwaysOnTop: false });
             await Utils.sleep(2);
             wActions = await new WindowsActions(app);
-            configPath = await getConfigPath();
+            config = await getConfigPath();
             await wActions.focusWindow();
             await done();
         } catch (err) {
@@ -54,9 +54,10 @@ describe('Tests for Minimize on Close', () => {
 
     it('should check whether the app is minimized', async (done) => {
         try {
-            let userConfig = await Application.readConfig(configPath);
-
+            let userConfig = await Application.readConfig(config);           
             await wActions.bringToFront("Symphony");
+            let count = await app.client.getWindowCount();
+            console.log(count);
             if (!isMac)
                 await wActions.openMenu(["Window", "Minimize on Close"]);
             else
@@ -67,21 +68,24 @@ describe('Tests for Minimize on Close', () => {
                 else
                     await wActions.openMenuOnMac(["View", "Minimize on Close"]);
             }
-            if (!isMa)
-                await wActions.openMenu(["Window", "Close"])
+            if (!isMac)
+                await wActions.openMenu(["Window", "Close"]);
             else
-                await wActions.openMenuOnMac(["View", "Minimize on Close"]);
-            await Utils.sleep(1);
-            let status = await wActions.isElectronProcessRunning();
-            await expect(status === false).toBeTruthy();
+                await wActions.openMenuOnMac(["Window", "Close"]);   
+            try
+            {
+                count = await app.client.getWindowCount();
+            }
+            catch(err1)
+            {
+                count =0;
+            }
+            await expect(count === 0).toBeTruthy();
             await done();
         } catch (err) {
             done.fail(new Error(`should check whether the app is minimized: ${err}`));
         };
     });
-
-
-
 })
 
 

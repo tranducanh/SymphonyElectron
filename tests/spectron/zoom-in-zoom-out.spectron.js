@@ -110,8 +110,7 @@ describe('Tests for Zoom in and Zoom out', () => {
     it('should zoom in the app and check whether it is zoomed in', async (done) => {
         if (!isMac) {
             await robot.setKeyboardDelay(500);
-            let bounds = await app.browserWindow.getBounds();
-            await console.log(bounds);
+            let bounds = await app.browserWindow.getBounds();            
             await robot.setMouseDelay(100);
             let x = await bounds.x + 200;
             let y = await bounds.y + 200;
@@ -119,23 +118,17 @@ describe('Tests for Zoom in and Zoom out', () => {
             await robot.mouseClick();
 
             await robot.keyToggle('0', 'down', ['control']);
-            await robot.keyToggle('0', 'up');
-            await robot.keyToggle('control', 'up');
+            await robot.keyToggle('0', 'up',['control']);          
 
             for (let i = 0; i < 4; i++) {
                 await robot.keyToggle('+', 'down', ['control', 'shift']);
-            }
-            await robot.keyToggle('+', 'up');
-            await robot.keyToggle('control', 'up');
-            await robot.keyToggle('shift', 'up');
+                await robot.keyToggle('+', 'up', ['control', 'shift']);
+            }           
             let zoomFactor = await app.electron.webFrame.getZoomFactor()
             await expect(zoomFactor > 1).toBeTruthy();
             await done();
         }
-        else {
-            // for (let i = 0; i < 4; i++) {
-            //     await wActions.openMenuOnMac(["Window", "Zoom"]);
-            // }
+        else {          
             let x = 200;
             let y = 200;
             await robot.moveMouse(x, y);

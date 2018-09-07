@@ -263,26 +263,8 @@ class WebDriver {
             await this.windowAction.pressCtrlM(); 
             await this.sendMessage(messages[i]).then(async ()=>
             {
-                await Utils.sleep(1);
-                let wincount = await  this.windowAction.app.client.getWindowCount()
-                console.log("wincounttt::"+wincount);
-                console.log (wincount)
-                let data  = await  this.windowAction.app.client.windowHandles();
-                console.log (data)
-                await Utils.sleep(1);
-                 wincount = await  this.windowAction.app.client.getWindowCount()
-                console.log("wincounttt::"+wincount);
-                console.log (wincount)
-                await Utils.sleep(1);
-                 wincount = await  this.windowAction.app.client.getWindowCount()
-                console.log("wincounttt::"+wincount);
-                console.log (wincount)
-                await  this.windowAction.app.client.windowByIndex(wincount-1).then(async()=>{
-                    let title = await this.windowAction.app.browserWindow.getTitle()
-                    console.log (title)
-                });
+                await this.windowAction.verifyPersistToastNotification(messages[i]);
             });   
-            await this.windowAction.verifyPersistToastNotification(messages[i]);          
         }
     }
     async closeAllGridModules(){

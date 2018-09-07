@@ -36,7 +36,7 @@ module.exports = {
     TYPE_ROOM: { private: "PRIVATE", public: "PUBLIC" },
     TIMEOUT_TEST_SUITE: 900000,
     TIMEOUT_PAGE_LOAD: 220000,
-    TIMEOUT_WAIT_ELEMENT: 10000,
+    TIMEOUT_WAIT_ELEMENT: 20000,
     MINIMIZED: 1,
     QUIT: 0
 

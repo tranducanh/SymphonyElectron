@@ -81,6 +81,7 @@ let webActions, windowAction, message;
 
       await webdriver.sendMessages(["#" + nameHashTag]);
       await windowAction.verifyNotCloseToastWhenMouseOver(specconst.USER_A.name + ": #" + nameHashTag);
+      await Utils.sleep(5);
       await webdriver.mentionUserOnChat(specconst.USER_B);
       await windowAction.verifyNotCloseToastWhenMouseOver(specconst.USER_A.name + ": @" + specconst.USER_B.name);
       await done();

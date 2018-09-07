@@ -351,9 +351,7 @@ class WindowsActions {
         });
     }
 
-    async verifyPersistToastNotification(message) {
-        let i = 0
-        
+    async verifyPersistToastNotification(message) {      
         let webAction = await new WebActions(this.app);
         let currentPosition = await this.getToastNotificationPosition(message);
         let curentSize = await this.getToastNotificationSize(message);       
@@ -455,10 +453,8 @@ class WindowsActions {
 
     async getToastNotificationPosition(message) {
         let index = await this.getToastNotificationIndex(message);
-        console.log("---"+index);
         await this.windowByIndex(index);
         let currentPosition = await this.getCurrentPosition();
-        
         await this.windowByIndex(0);
         return currentPosition;
     }

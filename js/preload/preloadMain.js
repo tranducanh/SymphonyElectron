@@ -164,7 +164,7 @@ function createAPI() {
                     containerVer: appVer,
                     buildNumber: buildNumber,
                     apiVer: '2.0.0',
-                    searchApiVer: '3.0.0'
+                    searchApiVer: '3.0.0-beta.8'
                 };
                 resolve(verInfo);
             });

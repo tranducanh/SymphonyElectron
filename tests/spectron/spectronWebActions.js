@@ -167,11 +167,10 @@ class WebActions {
 
     async login(user) {
         await this.inputText(ui.SIGN_IN_EMAIL, user.username);
-        await this.inputText(ui.SIGN_IN_PASSWORD, user.password);
-        await Utils.sleep(10);
+        await this.inputText(ui.SIGN_IN_PASSWORD, user.password);        
         await this.clickIfElementVisible(ui.SIGN_IN_BUTTON);
         await this.clickAndWaitElementVisible(ui.SIGN_IN_BUTTON, ui.SETTTING_BUTTON, constants.TIMEOUT_PAGE_LOAD);
-        //await this.waitElementNotVisible(ui.SPINNER);
+       
     }
 
     async persistToastIM(isPersistance) {
